@@ -1,0 +1,136 @@
+import datetime
+
+# Book list – each book has ID, title, author, year, pages, number of available copies
+books = [
+    {"id": 1, "title": "Wiedźmin", "author": "Sapkowski", "year": 1990, "pages": 300, "quantity": 3},
+    {"id": 2, "title": "Pan Tadeusz", "author": "Mickiewicz", "year": 1834, "pages": 340, "quantity": 2},
+    {"id": 3, "title": "Lalka", "author": "Prus", "year": 1890, "pages": 500, "quantity": 1},
+]
+
+# Add the rest automatically
+for i in range(4, 26):
+    books.append({
+        "id": i,
+        "title": f"Book {i}",
+        "author": f"Author {i}",
+        "year": 2000 + i,
+        "pages": 100 + i,
+        "quantity": i % 5 + 1
+    })
+
+# List of students – each student has ID, name and a list of borrowed books
+students = [
+    {"id": 1, "name": "Amadeusz Karpiński", "borrowed": []},
+    {"id": 2, "name": "Andrzej Kowalski", "borrowed": []},
+]
+
+# Find book by ID
+def find_book(book_id):
+    for b in books:
+        if b["id"] == book_id:
+            return b
+    return None
+
+# Find student by ID
+def find_student(student_id):
+    for s in students:
+        if s["id"] == student_id:
+            return s
+    return None
+
+# Add a new book
+def add_book():
+    print("Add a new book")
+    new = {
+        "id": len(books) + 1,
+        "title": input("Title: "),
+        "author": input("Author: "),
+        "year": int(input("Year of publication: ")),
+        "pages": int(input("Number of pages: ")),
+        "quantity": int(input("Number of copies: "))
+    }
+    books.append(new)
+    print("Book added!")
+
+# Edit existing book
+def edit_book():
+    book_id = int(input("Enter book ID to edit: "))
+    book = find_book(book_id)
+    if book:
+        book["title"] = input("New title: ") or book["title"]
+        book["author"] = input("New author: ") or book["author"]
+        book["year"] = int(input("New year: ") or book["year"])
+        book["pages"] = int(input("New number of pages: ") or book["pages"])
+        book["quantity"] = int(input("New number of copies: ") or book["quantity"])
+        print("Book updated.")
+    else:
+        print("Book not found.")
+
+# Delete book
+def delete_book():
+    book_id = int(input("Enter book ID to delete: "))
+    global books
+    books = [b for b in books if b["id"] != book_id]
+    print("Book deleted.")
+
+# Borrow book
+def borrow_book():
+    student_id = int(input("Student ID: "))
+    student = find_student(student_id)
+    if not student:
+        print("Student not found.")
+        return
+    if len(student["borrowed"]) >= 5:
+        print("You cannot borrow more than 5 books.")
+        return
+    book_id = int(input("Book ID to borrow: "))
+    book = find_book(book_id)
+    if not book or book["quantity"] <= 0:
+        print("Book not available.")
+        return
+    book["quantity"] -= 1
+    student["borrowed"].append({
+        "book_id": book_id,
+        "due": datetime.date.today() + datetime.timedelta(days=14)
+    })
+    print("Book borrowed.")
+
+# Return reminder
+def return_reminder():
+    today = datetime.date.today()
+    print("---- Return Reminder ----")
+    for s in students:
+        for b in s["borrowed"]:
+            if b["due"] < today:
+                book = find_book(b["book_id"])
+                print(f"{s['name']} should return '{book['title']}' (due: {b['due']})")
+
+# Main menu
+def main_menu():
+    while True:
+        print("""
+=== LIBRARY MENU ===
+1. Add a book
+2. Edit a book
+3. Delete a book
+4. Borrow a book
+5. Return reminder
+6. Exit""")
+        option = input("Choose an option: ")
+        if option == "1":
+            add_book()
+        elif option == "2":
+            edit_book()
+        elif option == "3":
+            delete_book()
+        elif option == "4":
+            borrow_book()
+        elif option == "5":
+            return_reminder()
+        elif option == "6":
+            break
+        else:
+            print("Invalid option.")
+
+if __name__ == "__main__":
+    main_menu()
